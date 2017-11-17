@@ -15,6 +15,7 @@ from mw_utilities import is_perpendicular
 
 class MazeWanderer:
     """Subscribes to topics relating to bot state and issues movement commands until victory condition reached.
+        See wander_maze_with_bot and move_bot for bulk of class's logic.
 
     """
     def __init__(self, bot, victory_grid):
@@ -76,7 +77,21 @@ class MazeWanderer:
 
     @staticmethod
     def move_bot(bot, cmd_pub):
-        """Chooses appropriate movement for bot state and executes on passed command publisher.
+        """Chooses appropriate movement for bot state and builds msg to execute on passed command publisher.
+
+            This is the primary method of the class as measured by the frequency of it being called and its
+            importance to the purpose of the class (bumping through the maze until hitting the cube).
+
+            Put simply, the control flow is:
+                1.) A bump is register by bump_callback and the bot state is set to is_bumping = True
+                    NOTE: Until both turning to face the wall head-on and then turning 90ish degrees are complete,
+                    is_bumping is left True. Essentially, is_bumping is used to indicate that the sequence of
+                    commands that need to happen after a wall collision are either still in process or are complete.
+                2.) The bot turns until it faces the wall head-on, checking to see if it is already perpendicular
+                    or if it has already reached perpendicular and begun swinging around for a 90ish degree turn.
+                3.) After the bot is facing the wall head-on, it turns 90ish degrees with 50:50 odds of going clockwise
+                    or counterclockwise. NOTE: This is not real path-finding, just a helloworld-type exercise in
+                    navigation and ROS architecture more generally.
 
         :param bot: Instance of ZigZagBot
         :param cmd_pub: rospy.Publisher on topic /cmd_vel_mux/input/navi
