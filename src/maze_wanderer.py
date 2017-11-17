@@ -90,7 +90,8 @@ class MazeWanderer:
         if bot.is_bumping:
             # need to face wall before turning 90ish
             # also need to make sure 90ish degree turn NOT already initiated
-            if not is_perpendicular(bot.left_scan, bot.right_scan) and not bot.is_making_90ish_turn:
+            # 1/100 of a degree is used as epsilon for perpendicular test
+            if not is_perpendicular(bot.left_scan, bot.right_scan, 0.01) and not bot.is_making_90ish_turn:
                 rospy.loginfo("turning toward wall")
                 face_wall_direction = 1
                 if bot.left_scan - bot.right_scan < 0:  # negative == clockwise, positive  == counterclockwise

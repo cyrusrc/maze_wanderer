@@ -1,0 +1,25 @@
+INTRODUCTION:
+A (very) simple node that blindly navigates a simulated turtlebot through a gazebo world
+toward a block at the end of its path. Victory is achieved when the bot reaches the block.
+
+The bot drives forward while its path is clear. When it collides with a wall, it rotates to
+face the wall at 90 degrees (or as close to that as it can), and then, with 50:50 odds, turns
+approximately 90 degrees clockwise or counterclockwise. The range of this turn is set to be between
+90 and 95 degrees to make it less likely for the bot to re-collide with the wall it is attempting to drive
+away from and to introduce some randomness that prevents the bot from getting stuck in a loop.
+
+After the bot has completed its 90ish degree turn, it drives forward again until the next wall.
+
+Lather, rinse, repeat until victory condition (hitting the block) is achieved.
+
+INSTALLATION INSTRUCTIONS:
+Clone repository to your catkin workspace's src folder and then run catkin_make.
+Note: the package turtlebot_gazebo is required for the simulator to work.
+
+COMMANDS TO RUN:
+1.) roscore
+    Note: Optional -- if you don't initialize a roscore separately, roslaunch will start one
+2.) roslaunch turtlebot_gazebo world_file:=/PATH_TO_YOUR_CATKIN_WORKSPACE/PATH_TO_MAZE_WANDERER_DIR/src/simple_maze
+    Example: roslaunch turtlebot_gazebo world_file:=/home/cyrus/catkin_ws/src/maze_wanderer/src/simple_maze
+3.) python maze_wanderer.py
+    Note: make sure file is executable (run 'chmod +x maze_wanderer.py' if it doesn't work)

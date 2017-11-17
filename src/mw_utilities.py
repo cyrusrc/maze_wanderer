@@ -2,10 +2,9 @@ import math
 
 
 def first_non_nan(ranges, forward):
-    # TODO: first_non_nan
-    """
+    """Returns the first element of a list not of type NaN. Forward begins with list[0], not forward with list[-1].
 
-    :param ranges:
+    :param ranges: A list of ranges where each element represents the intensity of a scan reading.
     :param forward:
     :return:
     """
@@ -17,12 +16,12 @@ def first_non_nan(ranges, forward):
     return -1
 
 
-def is_perpendicular(left, right):
-    # TODO: is_perpendicular
-    """
+def is_perpendicular(left, right, epsilon):
+    """Compares leftmost and rightmost readings from a laserscan output. If their difference is less than the passed
+       epsilon, that is considered to be perpendicular.
 
-    :param left:
-    :param right:
+    :param left: A laserscan reading intensity
+    :param right: A laserscan reading intensity
     :return:
     """
-    return abs(left - right) < 0.01
+    return abs(left - right) < epsilon
