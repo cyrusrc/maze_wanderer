@@ -14,14 +14,11 @@ from mw_utilities import is_perpendicular
 
 
 class MazeWanderer:
-    """
-
-    Attributes:
+    """Subscribes to topics relating to bot state and issues movement commands until victory condition reached.
 
     """
     def __init__(self, bot, victory_grid):
         rospy.init_node('maze_wanderer')
-        start_time = rospy.Time.now()
 
         # subscribe to all the topics we need
         rospy.Subscriber('scan', LaserScan, MazeWanderer.scan_callback, bot)
@@ -30,7 +27,7 @@ class MazeWanderer:
         rospy.Subscriber('gazebo/model_states', ModelStates, MazeWanderer.gazebo_callback, bot)
 
         # power on moving and victory evaluation loop
-        MazeWanderer.wander_maze_with_bot(bot, victory_grid, start_time)
+        MazeWanderer.wander_maze_with_bot(bot, victory_grid)
 
     @staticmethod
     def scan_callback(scan_msg, bot):
@@ -92,14 +89,14 @@ class MazeWanderer:
             # also need to make sure 90ish degree turn NOT already initiated
             # 1/100 of a degree is used as epsilon for perpendicular test
             if not is_perpendicular(bot.left_scan, bot.right_scan, 0.01) and not bot.is_making_90ish_turn:
-                rospy.loginfo("turning toward wall")
+                # rospy.loginfo("turning toward wall")
                 face_wall_direction = 1
                 if bot.left_scan - bot.right_scan < 0:  # negative == clockwise, positive  == counterclockwise
                     face_wall_direction = -1
                 move_cmd.angular.z = face_wall_direction * 0.1
             else:  # if bot is perpendicular to wall, then it is time to make 90ish degree turn
                 if not bot.is_making_90ish_turn:  # if turn just beginning, init turn direction and target orientation
-                    rospy.logwarn("bot  orientation at time of 90ish turn target setting: {}".format(bot.orientation))
+                    # rospy.logwarn("bot  orientation at time of 90ish turn target setting: {}".format(bot.orientation))
                     bot.is_making_90ish_turn = True
 
                     # turn 90ish degrees left or right with 50:50 odds.
@@ -108,7 +105,7 @@ class MazeWanderer:
                     # target orientation is actually set at slightly more than 90 degrees to minimize cases of bot
                     # immediately running back into the same wall -- this is necessary because the accuracies of both
                     # the sensed orientations and the issued commands are not very high
-                    target_orientation = bot.orientation + (turn_90ish_direction * random.randint(90, 95))
+                    target_orientation = bot.orientation + (turn_90ish_direction * random.randint(90, 93))
 
                     # degrees stretch from -180 to 180
                     # 1 -> -1 wraparound is at pi/2 on the unit circle, 179 -> -179 wraparound is at 3pi/2
@@ -122,26 +119,25 @@ class MazeWanderer:
                 else:
                     # check if current bot orientation is within a degree of target orientation
                     if abs(bot.orientation - bot.target_orientation) > 1:  # if 90ish turn incomplete, continue
-                        rospy.loginfo("turning 90ish")
+                        # rospy.loginfo("turning 90ish")
                         move_cmd.angular.z = bot.turn_90ish_direction * 0.3
                     else:  # now that 90ish turn is complete, bumping condition should be toggled
-                        rospy.loginfo("finished 90ish turn")
+                        # rospy.loginfo("finished 90ish turn")
                         bot.is_bumping = False
                         bot.is_making_90ish_turn = False
         else:
-            rospy.loginfo("moving forward")
-            move_cmd.linear.x = 2.0  # move forward at 0.6 m/s
+            # rospy.loginfo("moving forward")
+            move_cmd.linear.x = 0.6  # move forward at 0.6 m/s
 
         cmd_pub.publish(move_cmd)
 
     @staticmethod
-    def wander_maze_with_bot(bot, victory_grid, start_time):
+    def wander_maze_with_bot(bot, victory_grid):
         """Issues wandering movement commands to bot until it fulfills its victory condition.
 
         :param bot: Instance of ZigZagBot.
         :param victory_grid: A 4-tuple consisting of (x0, x1, y0, y2) that describes the grid exterior.
                Note: Starts top left relative to the origin.
-        :param start_time: The rospy.Time time when the MazerWanderer node initialized
         :return:
         """
         cmd_vel_pub = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
@@ -150,18 +146,16 @@ class MazeWanderer:
         while not rospy.is_shutdown():
             MazeWanderer.move_bot(bot, cmd_vel_pub)
             if MazeWanderer.evaluate_victory(bot, victory_grid):
-                win_time = rospy.Time.now()
-                time_elapsed = start_time - win_time
-                rospy.loginfo("Ziggy the ZigZagBot found the box in {}!".format(time_elapsed))
+                rospy.loginfo("Ziggy the ZigZagBot found the box!")
                 rospy.loginfo("MazeWanderer exiting...")
                 rospy.signal_shutdown("MazeWanderer victory condition reached")
 
-            rospy.loginfo("bot.left_scan: {}".format(bot.left_scan))
-            rospy.loginfo("bot.right_scan: {}".format(bot.right_scan))
-            rospy.loginfo("bot.is_bumping: {}".format(bot.is_bumping))
-            rospy.loginfo("bot.turn_90ish_direction: {}".format(bot.turn_90ish_direction))
-            rospy.loginfo("bot.orientation: {}".format(bot.orientation))
-            rospy.loginfo("bot.target orientation: {}".format(bot.target_orientation))
+            # rospy.loginfo("bot.left_scan: {}".format(bot.left_scan))
+            # rospy.loginfo("bot.right_scan: {}".format(bot.right_scan))
+            # rospy.loginfo("bot.is_bumping: {}".format(bot.is_bumping))
+            # rospy.loginfo("bot.turn_90ish_direction: {}".format(bot.turn_90ish_direction))
+            # rospy.loginfo("bot.orientation: {}".format(bot.orientation))
+            # rospy.loginfo("bot.target orientation: {}".format(bot.target_orientation))
 
             r.sleep()
 
